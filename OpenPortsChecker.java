@@ -6,35 +6,35 @@ import java.util.Scanner;
 import java.net.Socket;
 public class OpenPortsChecker {
     public static void main(String[] args) {
-        // السكانر
+        // scanner
         Scanner scanner = new Scanner(System.in);
-        // إختيار الطور
-        System.out.println("اختار 1- للبحث اليدوي 2- للبحث التلقائي");
+        // Choosing mode
+        System.out.println("Choose mode 1 for manual, Or 2 for automatic");
         int choice = scanner.nextInt();
         scanner.nextLine();
-        // متغيرات النطاق العام
-        String DnsOrIp = "";
+        // outer scope
+        String ip = "";
         int port = 0;
 
         if (choice == 1) {
-            System.out.println("أكتب الآي بي أو الدي إن إس ");
-            DnsOrIp = scanner.nextLine();
-            System.out.println("أكتب المنفذ ");
+            System.out.println("Type the ip:");
+            ip = scanner.nextLine();
+            System.out.println("Type the port:");
             port = scanner.nextInt();
             try {
-                Socket socket = new Socket(DnsOrIp, port);
-                System.out.println("مفتوح");
+                Socket socket = new Socket(ip, port);
+                System.out.println("Open");
                 socket.close();
             } catch (IOException e) {
-                System.out.println("مغلق");
+                System.out.println("Closed");
             }
         } else if (choice == 2) {
-            System.out.println("أكتب الآي بي أو الدي إن إس ");
-            DnsOrIp = scanner.nextLine();
-            // الخيوط لجعل عملية البحث سريعة
+            System.out.println("Type The Ip");
+            ip = scanner.nextLine();
+            // Threading
             ExecutorService executor = Executors.newFixedThreadPool(50);
-            //لإستخدام الخيوط يجب التأكد من أن المتغير نهائي
-            // الخريطة لربط المنفذ المفتوح بمعناه
+            //Final needed for thread
+            // map to translate important ports to strings
             Map<Integer, String> commonPorts = Map.ofEntries(
                     Map.entry(20, "FTP-Data"),
                     Map.entry(21, "FTP"),
@@ -86,11 +86,10 @@ public class OpenPortsChecker {
             );
             for (port = 1; port < 65535; port++) {
                final int finalPort = port;
-               final String finalDns = DnsOrIp;
-               // لبدأ استخدامهم
+               final String finalDns = ip;
+               // start threads
                 executor.submit(() -> {
-                    System.out.println("\u001B[33m" + "Scanning " + finalPort);
-                    // التحقق من المنفذ
+                    // port checking
                     try {
                         Socket socket = new Socket();
                         socket.connect(new java.net.InetSocketAddress(finalDns, finalPort), 500);
@@ -104,10 +103,8 @@ public class OpenPortsChecker {
                 });
 
             }
-            // لتحرير الخيوط
+            // thread release
             executor.shutdown();
         }
     }
 }
-
-
